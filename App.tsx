@@ -366,11 +366,11 @@ const App: React.FC = () => {
               <div className="grid grid-cols-1 gap-4">
                 <div className="bg-white/5 p-4 rounded-2xl">
                   <span className="text-[10px] font-black uppercase text-slate-500 block mb-1">Nome da Meta (ex: Trocar de Moto)</span>
-                  <input type="text" value={onboardingData.goal_name} onChange={e => setOnboardingData({...onboardingData, goal_name: e.target.value})} className="bg-transparent text-white w-full text-xl font-black outline-none placeholder:text-white/20" placeholder="Ex: Viagem de Férias" />
+                  <input type="text" value={onboardingData.goal_name || ''} onChange={e => setOnboardingData({...onboardingData, goal_name: e.target.value})} className="bg-transparent text-white w-full text-xl font-black outline-none placeholder:text-white/20" placeholder="Ex: Viagem de Férias" />
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl">
                   <span className="text-[10px] font-black uppercase text-slate-500 block mb-1">Valor do Sonho (R$)</span>
-                  <input type="number" value={onboardingData.financial_goal} onChange={e => setOnboardingData({...onboardingData, financial_goal: parseFloat(e.target.value)})} className="bg-transparent text-white w-full text-xl font-black outline-none" />
+                  <input type="number" value={onboardingData.financial_goal || ''} onChange={e => setOnboardingData({...onboardingData, financial_goal: e.target.value === '' ? undefined : parseFloat(e.target.value)})} className="bg-transparent text-white w-full text-xl font-black outline-none" placeholder="0" />
                 </div>
               </div>
             </section>
@@ -435,7 +435,7 @@ const App: React.FC = () => {
           <div className="h-full overflow-y-auto p-8 space-y-8 pb-24 custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-300">
             <h2 className="text-4xl font-black italic uppercase">Meu Corre</h2>
             <div className="space-y-6">
-              <div className="bg-emerald-600/90 p-8 rounded-[40px] shadow-2xl border border-white/10 active-scale group">
+              <div className="bg-emerald-600/90 p-8 rounded-[40px] shadow-2xl border border-white/10 group">
                  <label className="block text-[10px] font-black text-white/70 uppercase mb-2 tracking-widest group-focus-within:text-white">Ganhos de Hoje (Bruto)</label>
                  <div className="flex items-center gap-3">
                    <span className="text-2xl font-black text-white/50">R$</span>
@@ -443,7 +443,7 @@ const App: React.FC = () => {
                  </div>
               </div>
 
-              <div className="bg-rose-600/90 p-8 rounded-[40px] shadow-2xl border border-white/10 active-scale group">
+              <div className="bg-rose-600/90 p-8 rounded-[40px] shadow-2xl border border-white/10 group">
                  <label className="block text-[10px] font-black text-white/70 uppercase mb-2 tracking-widest group-focus-within:text-white">Gastos do Dia</label>
                  <div className="flex items-center gap-3">
                    <span className="text-2xl font-black text-white/50">R$</span>
@@ -554,13 +554,28 @@ const App: React.FC = () => {
                <div className="space-y-4">
                  <div>
                    <label className="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1">Nome do Sonho</label>
-                   <input type="text" placeholder="Ex: Moto Nova, Viagem, Reserva" value={userProfile?.goal_name} onChange={e => updateMotoProfile({ goal_name: e.target.value })} className="w-full bg-white/5 rounded-2xl p-4 text-sm font-black outline-none border border-white/5 focus:ring-2 ring-emerald-500/30 transition-all" />
+                   <input 
+                     type="text" 
+                     placeholder="Ex: Moto Nova, Viagem, Reserva" 
+                     value={userProfile?.goal_name || ''} 
+                     onChange={e => updateMotoProfile({ goal_name: e.target.value })} 
+                     className="w-full bg-white/5 rounded-2xl p-4 text-sm font-black outline-none border border-white/5 focus:ring-2 ring-emerald-500/30 transition-all text-white" 
+                   />
                  </div>
                  <div>
                    <label className="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1">Valor Alvo (R$)</label>
-                   <div className="bg-white/5 p-4 rounded-2xl flex justify-between items-center active-scale">
-                     <span className="text-[11px] font-black uppercase text-slate-400">R$</span>
-                     <input type="number" value={userProfile?.financial_goal} onChange={e => updateMotoProfile({ financial_goal: parseFloat(e.target.value) })} className="bg-transparent text-right font-black text-emerald-500 outline-none w-32 text-lg" />
+                   <div className="bg-white/5 p-4 rounded-2xl flex justify-between items-center border border-white/5">
+                     <span className="text-[11px] font-black uppercase text-slate-400 mr-2">R$</span>
+                     <input 
+                       type="number" 
+                       value={userProfile?.financial_goal === undefined || isNaN(userProfile?.financial_goal as number) ? '' : userProfile?.financial_goal} 
+                       onChange={e => {
+                         const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                         updateMotoProfile({ financial_goal: val });
+                       }} 
+                       className="flex-1 bg-transparent text-right font-black text-emerald-500 outline-none text-lg p-1" 
+                       placeholder="0"
+                     />
                    </div>
                  </div>
                </div>
