@@ -40,17 +40,10 @@ export interface Profile {
   platforms: string[];
   accident: boolean;
   challenge: string;
-}
-
-export interface FinancialData {
-  dailyIncome: number[];
-  fixedCosts: number;
-  debts: Debt[];
-  goal: string;
-}
-
-export interface Debt {
-  name: string;
-  amount: number;
-  interestRate: number;
+  // Novos campos
+  moto_oil_price?: number;
+  moto_fuel_price?: number;
+  moto_km_per_liter?: number;
+  financial_goal?: number;
+  goal_name?: string;
 }
