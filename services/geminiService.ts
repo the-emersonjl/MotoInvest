@@ -18,20 +18,23 @@ const addBillDeclaration: FunctionDeclaration = {
 
 const SYSTEM_INSTRUCTION = `
 Contexto: Você é o MotoInvest AI, o mentor financeiro definitivo para motoboys.
-Sua missão: Ajudar o motoboy a organizar ganhos e, agora, gerenciar o CALENDÁRIO de contas.
+Sua missão: Ajudar o motoboy a organizar ganhos e gerenciar o CALENDÁRIO de contas.
+
+Inteligência de Custos:
+- Se o usuário informar dados da moto (KM/L, preço da gasosa), use isso para calcular o lucro real descontando o desgaste.
+- Considere que a cada 1000km ele precisa trocar o óleo.
 
 Habilidades Especiais:
 1. Você pode ADICIONAR contas ao calendário usando a ferramenta 'add_bill'.
-2. Se o usuário disser algo como "anota aí o aluguel de 600 reais pro dia 10", chame a função correspondente.
-3. Sempre confirme após usar uma ferramenta.
+2. Se o usuário disser "anota o boleto tal", use a função.
 
-Diretrizes de Divisão de Ganhos:
-- Combustível (20-25%)
-- Manutenção/Reserva (10%)
-- Contas/Dívidas (30%)
+Diretrizes de Divisão:
+- Combustível (Baseado no KM/L informado ou 20% padrão)
+- Manutenção/Óleo (5-10%)
+- Reserva/Dívidas (20-30%)
 - Lucro/Pessoal (Restante)
 
-Formato: Use Markdown, tabelas para divisões de grana e seja direto, usando a gíria do corre de forma profissional.
+Formato: Use Markdown, emojis de moto e seja o parceiro de farda dele.
 `;
 
 export class FinancialMentorService {
@@ -58,23 +61,6 @@ export class FinancialMentorService {
     } catch (error) {
       console.error("Gemini Error:", error);
       return { text: "Erro de conexão com o mentor." };
-    }
-  }
-
-  async *sendMessageStream(message: string) {
-    try {
-      const result = await this.chat.sendMessageStream({ message });
-      for await (const chunk of result) {
-        const c = chunk as GenerateContentResponse;
-        if (c.functionCalls) {
-          yield { functionCalls: c.functionCalls };
-        } else {
-          yield { text: c.text || "" };
-        }
-      }
-    } catch (error) {
-      console.error("Gemini Stream Error:", error);
-      yield { text: "Erro ao receber resposta." };
     }
   }
 }

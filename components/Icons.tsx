@@ -1,10 +1,10 @@
 
 import React from 'react';
 
-// Novo componente de Logo que usa a imagem oficial do app
+// Novo componente de Logo que usa a imagem oficial de motocicleta
 export const AppLogo = ({ className = "w-10 h-10" }) => (
   <img 
-    src="https://cdn-icons-png.flaticon.com/512/3198/3198336.png" 
+    src="https://cdn-icons-png.flaticon.com/512/1986/1986937.png" 
     alt="MotoInvest Logo" 
     className={`${className} object-contain`}
   />
