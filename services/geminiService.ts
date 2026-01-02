@@ -1,6 +1,5 @@
 
-import { GoogleGenAI, Chat, GenerateContentResponse, Type, FunctionDeclaration } from "@google/genai";
-import { Role } from "../types";
+import { GoogleGenAI, Chat, Type, FunctionDeclaration } from "@google/genai";
 
 const addBillDeclaration: FunctionDeclaration = {
   name: 'add_bill',
@@ -16,50 +15,102 @@ const addBillDeclaration: FunctionDeclaration = {
   },
 };
 
+const getFinancialDataDeclaration: FunctionDeclaration = {
+  name: 'get_financial_summary',
+  parameters: {
+    type: Type.OBJECT,
+    description: 'Obtém um resumo detalhado dos ganhos, gastos, agenda de boletos e progresso da meta financeira.',
+    properties: {},
+  },
+};
+
 const SYSTEM_INSTRUCTION = `
 Contexto: Você é o MotoInvest AI, o mentor financeiro definitivo para motoboys e trabalhadores autônomos.
-Sua missão: Ajudar o usuário a organizar ganhos, gerenciar o CALENDÁRIO de contas e atingir METAS financeiras.
+Sua missão: Ajudar o usuário a organizar ganhos, gerenciar o CALENDÁRIO (agenda) de contas e atingir METAS financeiras.
 
-Foco em Metas:
-- O usuário define um objetivo (ex: Comprar uma moto nova, Quitar dívida do Nubank).
-- Ajude-o a ver quanto falta e como economizar nas diárias para chegar lá mais rápido.
+Capacidades e Acesso a Dados:
+- Você tem acesso total à AGENDA de débitos e ao progresso das METAS via ferramenta 'get_financial_summary'.
+- SEMPRE chame 'get_financial_summary' se o usuário perguntar sobre o futuro, sobre quanto falta para a meta, ou sobre quais contas vencem em breve.
+- Você é MULTIMODAL: Analise prints de apps de entrega ou comprovantes para confirmar ganhos.
+- Você entende ÁUDIOS: Resuma o que o usuário disse sobre o corre do dia.
 
-Habilidades Especiais:
-1. Você pode ADICIONAR contas ao calendário usando a ferramenta 'add_bill'.
-2. Se o usuário disser "anota o boleto tal", use a função.
+Diretrizes de Resposta:
+1. Comece sempre conferindo os dados atuais se a pergunta for financeira.
+2. Seja motivador e use gírias leves de motoboy ("corre", "visão", "marcha").
+3. Sugira divisões de lucro: 30% Meta/Sonho, 40% Contas Fixas, 30% Gastos/Manutenção.
 
-Diretrizes de Divisão de Lucro Sugerida:
-- Reserva de Emergência/Meta (30%)
-- Contas Fixas/Boletos (40%)
-- Gastos Diários (30%)
-
-Formato: Use Markdown, emojis de moto 🏍️ e dinheiro 💰. Seja motivador e direto.
+Formato: Use Markdown, emojis 🏍️💰. Direto ao ponto e estratégico.
 `;
 
 export class FinancialMentorService {
   private chat: Chat;
+  private ai: GoogleGenAI;
 
   constructor() {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    this.chat = ai.chats.create({
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    this.chat = this.ai.chats.create({
       model: 'gemini-3-flash-preview',
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
-        tools: [{ functionDeclarations: [addBillDeclaration] }],
+        tools: [{ functionDeclarations: [addBillDeclaration, getFinancialDataDeclaration] }],
       },
     });
   }
 
-  async sendMessage(message: string): Promise<{ text: string; functionCalls?: any[] }> {
+  async sendMessage(
+    message: string, 
+    media?: { data: string; mimeType: string }[],
+    onToolCall?: (name: string, args: any) => Promise<any>
+  ): Promise<{ text: string; functionCalls?: any[] }> {
     try {
-      const result = await this.chat.sendMessage({ message });
+      const parts: any[] = [{ text: message || "Analise os dados abaixo." }];
+      if (media) {
+        media.forEach(m => {
+          parts.push({
+            inlineData: {
+              data: m.data,
+              mimeType: m.mimeType
+            }
+          });
+        });
+      }
+
+      let response = await this.chat.sendMessage({ message: parts });
+
+      if (response.functionCalls && response.functionCalls.length > 0 && onToolCall) {
+        const functionResponses = [];
+        for (const fc of response.functionCalls) {
+          const result = await onToolCall(fc.name, fc.args);
+          functionResponses.push({
+            id: fc.id,
+            name: fc.name,
+            response: { result }
+          });
+        }
+        
+        const followUp = await this.chat.sendMessage({
+          message: functionResponses.map(fr => ({
+            functionResponse: {
+              name: fr.name,
+              id: fr.id,
+              response: fr.response
+            }
+          })) as any
+        });
+        
+        return {
+          text: followUp.text || "",
+          functionCalls: followUp.functionCalls
+        };
+      }
+
       return {
-        text: result.text || "",
-        functionCalls: result.functionCalls
+        text: response.text || "",
+        functionCalls: response.functionCalls
       };
     } catch (error) {
       console.error("Gemini Error:", error);
-      return { text: "Erro de conexão com o mentor." };
+      return { text: "Visão, deu um erro aqui na conexão. Tenta de novo!" };
     }
   }
 }
