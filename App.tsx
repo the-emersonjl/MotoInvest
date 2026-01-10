@@ -75,7 +75,10 @@ const App: React.FC = () => {
       const fetchPreference = async () => {
         try {
           const { data, error } = await supabase.functions.invoke('create-payment', {
-            body: { productDescription: "Acesso 30 dias", productPrice: 10 }
+            body: { productDescription: "Acesso 30 dias", productPrice: 10 },
+            headers: {
+              Authorization: `Bearer ${session.access_token}`
+            }
           });
 
           if (error) throw error;
