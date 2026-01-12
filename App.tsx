@@ -79,7 +79,8 @@ const App: React.FC = () => {
             body: {
               productDescription: "Acesso 30 dias",
               productPrice: 10,
-              email: session.user.email
+              email: session.user.email,
+              name: currentUser?.name || 'Comandante'
             },
             headers: {
               Authorization: `Bearer ${session.access_token}`
