@@ -75,7 +75,11 @@ const App: React.FC = () => {
       const fetchPreference = async () => {
         try {
           const { data, error } = await supabase.functions.invoke('create-payment', {
-            body: { productDescription: "Acesso 30 dias", productPrice: 10 },
+            body: {
+              productDescription: "Acesso 30 dias",
+              productPrice: 10,
+              email: session.user.email
+            },
             headers: {
               Authorization: `Bearer ${session.access_token}`
             }
@@ -92,7 +96,7 @@ const App: React.FC = () => {
 
       fetchPreference();
     }
-  }, [session, authStatus.isAuthorized]);
+  }, [session, authStatus.isAuthorized, mpPreferenceId]);
 
   // Injeta o script do Mercado Pago quando temos o Preference ID
   useEffect(() => {
