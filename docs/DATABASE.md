@@ -1,45 +1,51 @@
-# Database Schema Documentation
+# MotoInvest Database Schema Documentation
 
 ## Overview
-This document provides a comprehensive overview of the database schema used in the MotoInvest project. It outlines the various tables, their fields, relationships, and constraints.
+This documentation provides a comprehensive overview of the database schema for the MotoInvest application, including table descriptions, Row Level Security (RLS) policies, triggers, and a setup checklist.
 
 ## Tables
 
-### Users
-- **user_id** (Primary Key): Unique identifier for each user.
-- **username**: The username chosen by the user.
-- **email**: The email address of the user.
-- **password_hash**: Hashed password for user authentication.
-- **created_at**: Timestamp of when the user account was created.
-- **updated_at**: Timestamp of the last update to the user account.
+### 1. Users Table
+- **Description**: Stores information about the users of the MotoInvest application.
+- **Columns**:
+  - `id`: Primary key (UUID)
+  - `username`: Unique username for each user (STRING)
+  - `password_hash`: Hashed password for security (STRING)
+  - `email`: Unique email address (STRING)
+  - `created_at`: Timestamp of account creation (TIMESTAMP)
 
-### Products
-- **product_id** (Primary Key): Unique identifier for each product.
-- **name**: Name of the product.
-- **description**: Detailed description of the product.
-- **price**: Price of the product.
-- **created_at**: Timestamp of when the product was added.
-- **updated_at**: Timestamp of the last update to the product.
+### 2. Investments Table
+- **Description**: Records investments made by users.
+- **Columns**:
+  - `id`: Primary key (UUID)
+  - `user_id`: Foreign key referencing Users (UUID)
+  - `amount`: Amount invested (DECIMAL)
+  - `investment_date`: Date of investment (DATE)
 
-### Orders
-- **order_id** (Primary Key): Unique identifier for each order.
-- **user_id** (Foreign Key): The ID of the user who placed the order.
-- **total_amount**: The total amount for the order.
-- **order_date**: The date when the order was placed.
-- **status**: Current status of the order (e.g., pending, completed, canceled).
+### 3. Portfolio Table
+- **Description**: Represents a user's investment portfolio.
+- **Columns**:
+  - `id`: Primary key (UUID)
+  - `user_id`: Foreign key referencing Users (UUID)
+  - `investment_id`: Foreign key referencing Investments (UUID)
+  - `quantity`: Number of shares/units (INTEGER)
 
-### Order_Items
-- **order_item_id** (Primary Key): Unique identifier for each order item.
-- **order_id** (Foreign Key): The ID of the order.
-- **product_id** (Foreign Key): The ID of the product.
-- **quantity**: The quantity of the product ordered.
-- **price**: The price of the product at the time of the order.
+## Row Level Security (RLS) Policies
+- **Policy for Users Table**: Allow access only to the user associated with the `user_id`.
+- **Policy for Investments Table**: Enable users to view only their investments.
+- **Policy for Portfolio Table**: Users can access their respective portfolios.
 
-## Relationships
-- A user can have multiple orders.
-- An order can have multiple order items.
-- An order item is associated with one product.
+## Triggers
+1. **Investments_Audit**: Triggers on insert/delete/update to log changes to the Investments table.
+2. **Portfolio_Audit**: Maintains a history of changes in the Portfolio table.
 
-## Constraints
-- Foreign keys ensure referential integrity between the tables.
-- Unique constraints on usernames and emails in the Users table to prevent duplicates.
+## Setup Checklist
+- [ ] Configure the database environment.
+- [ ] Set up tables according to the above schema.
+- [ ] Implement RLS policies to secure data access.
+- [ ] Create necessary triggers for auditing.
+- [ ] Perform testing for access controls and data integrity.
+
+---
+
+*Document created on 2026-02-26 19:16:10 (UTC)*
