@@ -1,41 +1,45 @@
 # Database Schema Documentation
 
 ## Overview
-This document outlines the database schema for the MotoInvest application, providing an overview of the tables, their relationships, and any relevant constraints.
+This document provides a comprehensive overview of the database schema used in the MotoInvest project. It outlines the various tables, their fields, relationships, and constraints.
 
 ## Tables
 
 ### Users
 - **user_id** (Primary Key): Unique identifier for each user.
 - **username**: The username chosen by the user.
+- **email**: The email address of the user.
 - **password_hash**: Hashed password for user authentication.
-- **email**: User's email address.
-- **created_at**: Timestamp of when the user was created.
+- **created_at**: Timestamp of when the user account was created.
+- **updated_at**: Timestamp of the last update to the user account.
 
-### Investments
-- **investment_id** (Primary Key): Unique identifier for each investment.
-- **user_id** (Foreign Key): References `Users(user_id)`.
-- **amount**: The amount of money invested.
-- **investment_date**: Date when the investment was made.
-- **investment_type**: Type of investment (e.g., stocks, bonds, etc.).
+### Products
+- **product_id** (Primary Key): Unique identifier for each product.
+- **name**: Name of the product.
+- **description**: Detailed description of the product.
+- **price**: Price of the product.
+- **created_at**: Timestamp of when the product was added.
+- **updated_at**: Timestamp of the last update to the product.
 
-### Transactions
-- **transaction_id** (Primary Key): Unique identifier for each transaction.
-- **investment_id** (Foreign Key): References `Investments(investment_id)`.
-- **transaction_date**: Date when the transaction occurred.
-- **transaction_amount**: Amount involved in the transaction.
-- **transaction_type**: Type of transaction (e.g., buy, sell).
+### Orders
+- **order_id** (Primary Key): Unique identifier for each order.
+- **user_id** (Foreign Key): The ID of the user who placed the order.
+- **total_amount**: The total amount for the order.
+- **order_date**: The date when the order was placed.
+- **status**: Current status of the order (e.g., pending, completed, canceled).
+
+### Order_Items
+- **order_item_id** (Primary Key): Unique identifier for each order item.
+- **order_id** (Foreign Key): The ID of the order.
+- **product_id** (Foreign Key): The ID of the product.
+- **quantity**: The quantity of the product ordered.
+- **price**: The price of the product at the time of the order.
 
 ## Relationships
-- Each user can have multiple investments, establishing a one-to-many relationship between `Users` and `Investments`.
-- Each investment can have multiple transactions, creating another one-to-many relationship between `Investments` and `Transactions`.
+- A user can have multiple orders.
+- An order can have multiple order items.
+- An order item is associated with one product.
 
 ## Constraints
-- Foreign keys ensure referential integrity between tables.
-- Unique constraints on `username` and `email` in the `Users` table to avoid duplicates.
-
-## Indexes
-- Indexes on foreign key columns to speed up lookup queries.
-
-## Conclusion
-This schema provides a foundation for managing user investments and transactions efficiently. Future versions may expand on this by adding more tables or altering existing structures based on application needs.
+- Foreign keys ensure referential integrity between the tables.
+- Unique constraints on usernames and emails in the Users table to prevent duplicates.
